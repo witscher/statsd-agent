@@ -2,20 +2,25 @@ import statsd
 import time
 import psutil
 import multiprocessing
+import socket
+
+host = socket.gethostname()
+server = '1.1.1.1'  #Define remote statsd server here
+port = 8125         #Define remote port here
 
 def disk():
-    c = statsd.StatsClient('localhost', 8125, prefix='system.disk')
+    c = statsd.StatsClient(server, port, prefix=host+'.disk')
     while True:
         disk_usage = psutil.disk_usage('/')
         c.gauge('root.total', disk_usage.total)
         c.gauge('root.used', disk_usage.used)
         c.gauge('root.free', disk_usage.free)
         c.gauge('root.percent', disk_usage.percent)
-            
+
         time.sleep(10)
 
 def cpu_times():
-    c = statsd.StatsClient('localhost', 8125, prefix='system.cpu')
+    c = statsd.StatsClient(server, port, prefix=host+'.cpu')
     while True:
         cpu_times = psutil.cpu_times()
         c.gauge('system_wide.times.user', cpu_times.user)
@@ -28,11 +33,11 @@ def cpu_times():
         c.gauge('system_wide.times.steal', cpu_times.steal)
         c.gauge('system_wide.times.guest', cpu_times.guest)
         c.gauge('system_wide.times.guest_nice', cpu_times.guest_nice)
-        
+
         time.sleep(10)
 
 def cpu_times_percent():
-    c = statsd.StatsClient('localhost', 8125, prefix='system.cpu')
+    c = statsd.StatsClient(server, port, prefix=host+'.cpu')
     while True:
         value = psutil.cpu_percent(interval=1)
         c.gauge('system_wide.percent', value)
@@ -49,9 +54,9 @@ def cpu_times_percent():
         c.gauge('system_wide.times_percent.guest', cpu_times_percent.guest)
         c.gauge('system_wide.times_percent.guest_nice', cpu_times_percent.guest_nice)
         time.sleep(10)
-
+        
 def memory():
-    c = statsd.StatsClient('localhost', 8125, prefix='system.memory')
+    c = statsd.StatsClient(server, port, prefix=host+'.memory')
     while True:
         swap = psutil.swap_memory()
         c.gauge('swap.total', swap.total)
@@ -69,13 +74,33 @@ def memory():
         c.gauge('virtual.inactive', virtual.inactive)
         c.gauge('virtual.buffers', virtual.buffers)
         c.gauge('virtual.cached', virtual.cached)
-        
+
         time.sleep(10)
-        
+
+def network():
+    c = statsd.StatsClient(server, port, prefix=host+'.network')
+    last_bytes_recv = 0
+    last_bytes_sent = 0
+    speed_recv = 0
+    speed_sent = 0
+    while True:
+        net = psutil.net_io_counters()
+        bytes_recv = net.bytes_recv
+        bytes_sent = net.bytes_sent
+        speed_recv = (bytes_recv - last_bytes_recv) / 10
+        speed_sent = (bytes_sent - last_bytes_sent) / 10
+        last_bytes_recv = bytes_recv    
+        last_bytes_sent = bytes_sent
+        c.gauge('bytes_recv', bytes_recv)
+        c.gauge('bytes_sent', bytes_sent)
+        c.gauge('speed_recv', speed_recv)
+        c.gauge('speed_sent', speed_sent)
+        time.sleep(10)
+
 if __name__ == '__main__':
     multiprocessing.Process(target=disk).start()
     multiprocessing.Process(target=cpu_times).start()
     multiprocessing.Process(target=cpu_times_percent).start()
     multiprocessing.Process(target=memory).start()
-
+    multiprocessing.Process(target=network).start()
 
