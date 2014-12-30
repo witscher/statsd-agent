@@ -3,9 +3,12 @@ import time
 import psutil
 import os
 import socket
+import sys
 import yaml
 
-config = yaml.load(file("config.yml"))
+config_path = os.path.dirname(sys.argv[0]) + "config.yml"
+
+config = yaml.load(file(config_path))
 
 prefix = config['prefix']
 server = config['ip']
