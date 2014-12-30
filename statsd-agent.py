@@ -6,7 +6,7 @@ import socket
 import sys
 import yaml
 
-config_path = os.path.dirname(sys.argv[0]) + "config.yml"
+config_path = os.path.dirname(sys.argv[0]) + "/config.yml"
 
 config = yaml.load(file(config_path))
 
