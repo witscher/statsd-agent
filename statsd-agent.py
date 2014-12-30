@@ -3,18 +3,24 @@ import time
 import psutil
 import os
 import socket
+import yaml
 
-host = socket.gethostname()
-server = '1.1.1.1'  #Define remote statsd server here
-port = 8125         #Define remote port here
+config = yaml.load(file("config.yml"))
 
-last_net   = psutil.net_io_counters()
+prefix = config['prefix']
+server = config['ip']
+port   = config['port']
+
+last_net  = psutil.net_io_counters()
 net_speed = {}
-statsd_client = statsd.StatsClient(server, port, prefix=host+'.')
+
+statsd_client = statsd.StatsClient(server, port, prefix = prefix)
+
 while True:
     memory = psutil.phymem_usage()
-    disk = psutil.disk_usage("/")
-    net = psutil.net_io_counters()
+    disk   = psutil.disk_usage("/")
+
+    net    = psutil.net_io_counters()
     net_speed['recv'] = (net.bytes_recv - last_net.bytes_recv) / 10
     net_speed['sent'] = (net.bytes_sent - last_net.bytes_sent) / 10
     last_net = net
