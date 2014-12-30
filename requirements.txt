@@ -1,0 +1,2 @@
+statsd==3.0
+psutil==2.1
