@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import statsd
 import time
 import psutil
@@ -6,13 +7,15 @@ import socket
 import sys
 import yaml
 
-config_path = os.path.dirname(sys.argv[0]) + "/config.yml"
+config_path = "config.yml"
 
 config = yaml.load(file(config_path))
 
 prefix = config['prefix']
-server = config['ip']
-port   = config['port']
+server = config['statsd_host']
+port   = config['statsd_port']
+
+print(config) 
 
 last_net  = psutil.net_io_counters()
 net_speed = {}
@@ -31,12 +34,11 @@ while True:
     gauges = {
         "memory.used":        memory.used,
         "memory.free":        memory.free,
-        "memory.percent":     memory.percent,
+        "memory.total":       memory.total,
         "cpu.percent":        psutil.cpu_percent(),
         "load":               os.getloadavg()[0],
         "disk.size.used":     disk.used,
-        "disk.size.free":     disk.free,
-        "disk.size.percent":  disk.percent,
+        "disk.size.total":     disk.total,
         "net.in.bytes":       net_speed["recv"],
         "net.out.bytes":      net_speed["sent"],
         "net.in.errors":      net.errin,

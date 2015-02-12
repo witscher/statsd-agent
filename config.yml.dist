@@ -1,0 +1,41 @@
+# your statsd server to deliver
+statsd_host: 127.0.0.1 
+statsd_port: 8125
+
+# 
+namespace_prefix: localhost
+
+logfile: statsd-agent.log
+
+plugins:
+  # all plugins are located in the plugins folder
+  # to develop your own plugin, use the skeleton plugin
+  # execute a plugin directly from the plugin directory to see possible configuration parameters and some output,
+  # i.E.
+  # ./plugins/disk.py -h
+  # 
+  # misconfigured plugins or plugins with missing parameters will not run, but write a message to the log file
+
+  - namespace: system.memory
+    plugin: memory
+
+  - namespace: system.disk.root 
+    plugin: disk
+    mountpoint: /
+
+  # example for a second disk
+  - namespace: system.disk.home 
+    plugin: disk
+    mountpoint: /home
+
+  - namespace: system.processes
+    plugin: procs
+
+  - namespace: redis
+    plugin: redis
+    host: localhost
+    port: 3179 
+
+  - namespace: nginx
+    plugin: nginx_status
+    url: http://localhost:80/nginx_status

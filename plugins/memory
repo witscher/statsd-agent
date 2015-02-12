@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+import psutil
+
+memory = psutil.phymem_usage()
+            
+gauges = {
+    "memory.used":        memory.used,
+    "memory.free":        memory.free,
+    "memory.total":       memory.total,
+}
+    
+for name, value in gauges.items():
+    print name, value
+
