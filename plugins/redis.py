@@ -1,17 +1,13 @@
 #!/usr/bin/env python
-# taken from https://gist.github.com/zircote/6161466
-
-import redis
+# gracefully taken from https://gist.github.com/zircote/6161466
 import statsd
 import time
 import argparse
-import logging
 import sys
 import os
+import redis
 
 #: redis info keys
-DEFAULT_REDIS_PORT = 6379
-DEFAULT_REDIS_HOST = "localhost"
 GAUGES = [
     'used_memory',
     'used_memory_lua',
@@ -58,7 +54,7 @@ parser.add_argument("--namespace-service", help="the service namespace key for s
                     default='redis', type=str)
 parser.add_argument("-v", "--verbose", help="print the statsd namespaces being monitored", action="store_true")
 parser.add_argument("-f", "--frequency", help="frequency to collect statistics in seconds [1]", default=1, type=int)
-parser.add_argument("--statsd-host", help="statsd server address", default=DEFAULT_REDIS_HOST, type=str)
+parser.add_argument("--statsd-host", help="statsd server address", default="127.0.0.1", type=str)
 parser.add_argument("--statsd-port", help="statsd server port", default=8125, type=int)
 parser.add_argument("--statsd-sample-rate", help="statsd sample rate", default=1, type=int)
 parser.add_argument("--detach", help="detach process and run in background", action="store_true")
@@ -67,24 +63,17 @@ parser.add_argument("-l", "--loglevel", help="enable debugging", choices=('DEBUG
 parser.add_argument("--namespace-format", default="{host}.{service_name}.{port}", type=str,
                     help="the namespace key format")
 args = parser.parse_args()
-'''Script Entry point
 
-'''
+redis_conn = redis.StrictRedis()
+info = redis_conn.info()
+print info
 
-
-def main():
-    logging.basicConfig(level=args.loglevel)
-    redis_con = redis.StrictRedis(host="127.0.0.1", port=6379 , password="AachaHeeGh7Eeng5Oozieliexa3aehohliu8si3looS")
-    logging.debug("starting redis statsd monitoring with arguments: [%s]" % args)
-    info = redis_con.info()
-    log_gauges(redis_con, info)
+def collect():
+    redis_conn = redis.StrictRedis()
+    info = redis_conn.info()
+    log_gauges(redis_conn, info)
 
 
-'''statsd redis host info parsing and logging
-
-:param ns:   the toplevel namespace to log the data into
-:param info: the redis info dict
-'''
 
 
 def log_gauges(ns, info):
@@ -102,12 +91,8 @@ def log_gauges(ns, info):
     print('redis.expires.total', expires_total)
     print('redis.keys.total', keys_total)
 
-
-
 if __name__ == "__main__":
-    try:
-        if args.detach and os.fork():
-            sys.exit()
-        main()
-    except OSError, e:
-        raise Exception("%s [%d]" % (e.strerror, e.errno))
+    import sys
+    collect()
+    
+

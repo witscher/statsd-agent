@@ -11,7 +11,7 @@ config_path = "config.yml"
 
 config = yaml.load(file(config_path))
 
-prefix = config['prefix']
+prefix = config['namespace_prefix']
 server = config['statsd_host']
 port   = config['statsd_port']
 
