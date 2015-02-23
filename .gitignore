@@ -4,3 +4,6 @@ __pycache__/
 
 # local config file
 config.yml
+
+# logfiles
+*.log
