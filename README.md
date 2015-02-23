@@ -3,31 +3,99 @@ statsd-agent
 
 Statsd client to monitor CPU, Memory, Disk and Network
 
-Quickstart
+Installation
 ============
 
-## Installation (Ubuntu)
-First, download both *statsd-agent.py* and *statsd-agent.conf*. Create a directory `/opt/statsd-agent` and place *statsd-agent.py* in it. Place the Upstart configuration file *statsd-agent.conf* in `/etc/init/`. The statsd-agent.py will automatically start as service on system startup or you can manually start it using the following command:
+## Installation (Ubuntu 14.04 LTS)
+
 ```
-service statsd-agent start
+sudo apt-get install python-statsd python-psutil git
+# add a system user for statsd-agent
+cd /opt/
+git clone git@github.com:witscher/statsd-agent.git
+sudo adduser --system --group --home /opt/statsd-agent statsd-agent
+cd /opt/statsd-agent
+cp config.yml.dist config.yml
+# if yo want to start statsd-agent automatically:
+sudo cp examples/statsd-agent.conf /etc/init/statsd-agent.conf
+chown -R statsd-agent:statsd-agent /opt/statsd-agent
 ```
 
-## Installation (Other Linux/Windows/Mac)
-stasd-agent.py is really just a single python file. You can run it directly using python command:
-```
-python statsd-agent.py
-```
-You can use any daemon tools to make it run as service/background. One of an example is [Supervisor](http://supervisord.org/).
+### Running/Stopping 
+Use the Ubuntu service commandwrapper to run/stop statsd-agent:
 
-## Running/Stopping (Ubuntu)
-Use upstart command to run/stop statsd-agent:
 ```
 service statsd-agent start
 service statsd-agent stop
 service statsd-agent restart
 service statsd-agent status
 ```
-More info about Ubuntu Upstart can be found at http://askubuntu.com/questions/19320/how-to-enable-or-disable-services
+
+
+## Installation (Other Linux/Windows/Mac)
+stasd-agent.py is really just a python script. You can run it directly using python command:
+```
+python statsd-agent.py
+```
+
+You can use any daemon tools to make it run as service/background. One of an example is [Supervisor](http://supervisord.org/).
+
+
+More info about Ubuntu Upstart can be found at http://upstart.ubuntu.com/cookbook/
+
+
+Configuration
+============
+
+## General configuration
+The config.yml is mostly self explaining.
+
+## Plugin configuration 
+
+Every plugin can be executed several times, a good example is the disk plugin configuration in the config.yml.example file.
+So no matter how many instances of whatsoever you want to monitor, you can do it by just adding the according plugin several times to the configuration
+
+### Plugin Parameters
+
+#### plugin:
+
+the name of the plugin, must match the <plugin>.py file located in plugins/
+
+
+#### namespace:
+
+Each plugin has its own namespace, so you can change where your statsd metrics belong to.
+i.E. if you think the number of nginx Processes doesn not belong to
+'hostname.system.processes.nginx' you can change it to 'hostname.nginx.processes.nginx' by simply changing the plugin namespace.
+
+
+#### more parameters:
+
+each plugin may require and/or accept more parameters. To pre-flight the plugin behaviour, simply execute the plugin with -h itself. i.e. All Parameters with double dashes (--) should work when added to the corresponding plugin in the config file.
+
+so,
+
+```
+python plugins/disk.py --mountpoint /home
+```
+
+is equal to this configuration:
+
+```
+  - plugin:  disk
+    namespace: system.disk.home
+    mountpoint: /home
+```
+
+Plugin developer guidelines
+============
+
+* a plugin must have a main function named 'collect()'
+* the plugin must work as module and as a exectubale script itself
+* a plugin must offer all arguments via argparse wehn called with -h or --help
+* the collect() function returns { name : value, name2: value2, ... }  as python  dictionary
+
+
 
 License
 ============
