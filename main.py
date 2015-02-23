@@ -6,6 +6,7 @@ import socket
 import sys
 import yaml
 import logging
+import copy
 
 
 config_file = "config.yml"
@@ -16,6 +17,7 @@ config = yaml.load(file(sys.path[0] + "/" + config_file))
 prefix = config['namespace_prefix']
 server = config['statsd_host']
 port   = config['statsd_port']
+update_interval = config['update_interval']
 
 logger = logging.getLogger(config['app_name'])
 hdlr = logging.FileHandler(config['logfile'])
@@ -30,37 +32,50 @@ logger.setLevel(logging.WARNING)
 
 statsd_client = statsd.StatsClient(server, port, prefix = prefix)
 
-for plugin in config['plugins']:
-	if 'namespace' in plugin: 
-	    namespace = plugin['namespace']
-	    del plugin['namespace']
-	else:
-	    namespace = plugin['plugin']
 
-	pluginname = plugin['plugin']
-
-	# remove the plugin name from the dict
-	del plugin['plugin']
-
-
-	try:
-		imported_plugin = __import__("plugins.%s" % pluginname, fromlist=["plugins"])
-	except ImportError:
-		logger.error("error importing " + pluginname + ".py!")
+while True:
+	# prevent config['plugins'] from changing
+	plugin_list = copy.deepcopy(config['plugins'])
 	
-	# pass the remaining dict items as method parameters
-	try:
-		results = imported_plugin.collect(**plugin)
-		for name, value in results.items():
-			full_namespace = namespace + "." + str(name)
-			print full_namespace, value
-			
-			#FIXME: add different data types to plugins
-			statsd_client.gauge(name, value)
-	except:
-		#print plugin
-		logger.error('command: "plugins/' + pluginname + '.py '+ str(plugin)+ '"failed! run the plugin directly to debug.')
+	print "---------- " + time.strftime("%Y-%m-%d %H:%M:%S") + " ----------"
 
+	for plugin in plugin_list:
+		if 'namespace' in plugin: 
+		    namespace = plugin['namespace']
+		    del plugin['namespace']
+		else:
+		    namespace = plugin['plugin']
+
+		pluginname = plugin['plugin']
+
+		# remove the plugin name from the dict
+		 
+		del plugin['plugin']
+		
+		try:
+			imported_plugin = __import__("plugins.%s" % pluginname, fromlist=["plugins"])
+		except ImportError:
+			logger.error("error importing " + pluginname + ".py!")
+
+		
+
+		# pass the remaining dict items as method parameters
+		try:
+			results = imported_plugin.collect(**plugin)
+
+			for name, value in results.items():
+				full_namespace = namespace + "." + str(name)
+
+				print full_namespace, value
+
+				#FIXME: add different metric types to plugins, not only gauges
+				statsd_client.gauge(full_namespace, value)
+		except:
+			#print plugin
+			logger.error('command: "plugins/' + pluginname + '.py '+ str(plugin)+ '"failed! run the plugin directly to debug.')
+	
+	time.sleep(update_interval)
+	
 
 
 
