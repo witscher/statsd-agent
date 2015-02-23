@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# gracefully taken from https://gist.github.com/zircote/6161466
+# gracefully taken from https://gist.github.com/zircote/6161466 with some modifications
+# does not work yet.
+
 import statsd
 import time
 import argparse
