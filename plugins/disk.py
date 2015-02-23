@@ -17,7 +17,7 @@ def collect(mountpoint="/"):
 if __name__ == "__main__":
     import sys
     import argparse
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Check disk space.')
     parser.add_argument('--mountpoint', metavar='<mount point>', default='/', help='which mountpoint to check')
     args = parser.parse_args()
     output = collect(args.mountpoint)

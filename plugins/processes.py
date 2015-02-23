@@ -26,6 +26,10 @@ def collect(procname = None):
 
 if __name__ == "__main__":
     import sys
-    output = collect()
+    import argparse
+    parser = argparse.ArgumentParser(description='Check disk space.')
+    parser.add_argument('--procname', metavar='<Process string>', default=None, help='Name or substing of the process')
+    args = parser.parse_args()
+    output = collect(args.procname)
     for name, value in output.items():
 	    print name, value
