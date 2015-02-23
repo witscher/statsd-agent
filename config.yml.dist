@@ -2,10 +2,19 @@
 statsd_host: 127.0.0.1 
 statsd_port: 8125
 
-# 
+#send metrics also to stdout (for debugging/testing)
+stdout: False
+
 namespace_prefix: localhost
 
 logfile: statsd-agent.log
+
+#write results also to stdout (for testing/debugging)
+stdout: False
+
+# Update interval in seconds, default is 10s
+update_interval: 10
+
 
 plugins:
   # all plugins are located in the plugins folder
@@ -30,12 +39,3 @@ plugins:
 
   - namespace: system.processes
     plugin: procs
-
-  - namespace: redis
-    plugin: redis
-    host: localhost
-    port: 3179 
-
-  - namespace: nginx
-    plugin: nginx_status
-    url: http://localhost:80/nginx_status

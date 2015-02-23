@@ -26,8 +26,10 @@ hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
 logger.setLevel(logging.WARNING)
 
+# TODO:
+# add argument parser for manual/on-the-fly usage
 
-#debugging of the config file
+# debug output of the config file
 #print(yaml.dump(config))
 
 statsd_client = statsd.StatsClient(server, port, prefix = prefix)
@@ -36,10 +38,13 @@ statsd_client = statsd.StatsClient(server, port, prefix = prefix)
 while True:
 	# prevent config['plugins'] from changing
 	plugin_list = copy.deepcopy(config['plugins'])
-	
-	print "---------- " + time.strftime("%Y-%m-%d %H:%M:%S") + " ----------"
+	if config['stdout'] is True:
+		print ("---------- " + time.strftime("%Y-%m-%d %H:%M:%S") + " ----------") 
 
 	for plugin in plugin_list:
+
+		# set namespace if given, if not set pluginname as namespace
+		# TODO: double namespace detection
 		if 'namespace' in plugin: 
 		    namespace = plugin['namespace']
 		    del plugin['namespace']
@@ -49,7 +54,6 @@ while True:
 		pluginname = plugin['plugin']
 
 		# remove the plugin name from the dict
-		 
 		del plugin['plugin']
 		
 		try:
@@ -57,31 +61,23 @@ while True:
 		except ImportError:
 			logger.error("error importing " + pluginname + ".py!")
 
-		
-
 		# pass the remaining dict items as method parameters
 		try:
+			# TEST:
+			# does yaml ordering work with multile function parameters?
 			results = imported_plugin.collect(**plugin)
 
 			for name, value in results.items():
 				full_namespace = namespace + "." + str(name)
 
-				print full_namespace, value
+				if config['stdout'] is True:
+					print full_namespace, value 
 
 				#FIXME: add different metric types to plugins, not only gauges
 				statsd_client.gauge(full_namespace, value)
 		except:
-			#print plugin
+			#FIXME: handle Exceptions properly
 			logger.error('command: "plugins/' + pluginname + '.py '+ str(plugin)+ '"failed! run the plugin directly to debug.')
 	
 	time.sleep(update_interval)
 	
-
-
-
-
-#while True:
-#    
-#    statsd_client.gauge(name, value)
-#
-#    time.sleep(10)
