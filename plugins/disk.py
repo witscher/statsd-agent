@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
 def collect(mountpoint="/"):
-	import psutil
-
-	
-	disk   = psutil.disk_usage(mountpoint)
+    import psutil
 
 
-	gauges = {
-	    "used":     disk.used,
-	    "total":     disk.total,
-	}
-	    
-	return gauges
+    disk   = psutil.disk_usage(mountpoint)
+
+
+    gauges = {
+        "used":     disk.used,
+        "total":     disk.total,
+    }
+
+    return gauges
 
 if __name__ == "__main__":
     import sys
@@ -22,4 +22,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     output = collect(args.mountpoint)
     for name, value in output.items():
-    	print name, value
+        print name, value

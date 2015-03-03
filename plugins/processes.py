@@ -2,27 +2,27 @@
 
 
 def collect(procname = None):
-	import psutil
+    import psutil
 
-	number = 0
-	nomatch = False
+    number = 0
+    nomatch = False
 
-	for proc in psutil.process_iter():
-		if procname != None:
-			if proc.name in str(procname):
-				number += 1
-				
-		else:
-			number += 1
-			nomatch = True
+    for proc in psutil.process_iter():
+        if procname != None:
+            if proc.name in str(procname):
+                number += 1
 
-	if nomatch:
-		procname = "total"
+        else:
+            number += 1
+            nomatch = True
+
+    if nomatch:
+        procname = "total"
 
 
-	processes = { procname : number}
+    processes = { procname : number}
 
-	return processes
+    return processes
 
 if __name__ == "__main__":
     import sys
@@ -32,4 +32,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     output = collect(args.procname)
     for name, value in output.items():
-	    print name, value
+        print name, value

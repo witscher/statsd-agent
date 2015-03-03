@@ -79,5 +79,3 @@ if __name__ == "__main__":
     parser.add_argument("--auth", type=str, metavar='<password>', default=None, help="a password, if specified in 'requirepass' ")
     args = parser.parse_args()
     collect(args.host, args.port, args.auth)
-    
-

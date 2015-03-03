@@ -23,7 +23,7 @@ logger = logging.getLogger(config['app_name'])
 hdlr = logging.FileHandler(config['logfile'])
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
-logger.addHandler(hdlr) 
+logger.addHandler(hdlr)
 logger.setLevel(logging.WARNING)
 
 # TODO:
@@ -36,48 +36,47 @@ statsd_client = statsd.StatsClient(server, port, prefix = prefix)
 
 
 while True:
-	# prevent config['plugins'] from changing
-	plugin_list = copy.deepcopy(config['plugins'])
-	if config['stdout'] is True:
-		print ("---------- " + time.strftime("%Y-%m-%d %H:%M:%S") + " ----------") 
+    # prevent config['plugins'] from changing
+    plugin_list = copy.deepcopy(config['plugins'])
+    if config['stdout'] is True:
+        print ("---------- " + time.strftime("%Y-%m-%d %H:%M:%S") + " ----------")
 
-	for plugin in plugin_list:
+    for plugin in plugin_list:
 
-		# set namespace if given, if not set pluginname as namespace
-		# TODO: double namespace detection
-		if 'namespace' in plugin: 
-		    namespace = plugin['namespace']
-		    del plugin['namespace']
-		else:
-		    namespace = plugin['plugin']
+        # set namespace if given, if not set pluginname as namespace
+        # TODO: double namespace detection
+        if 'namespace' in plugin:
+            namespace = plugin['namespace']
+            del plugin['namespace']
+        else:
+            namespace = plugin['plugin']
 
-		pluginname = plugin['plugin']
+        pluginname = plugin['plugin']
 
-		# remove the plugin name from the dict
-		del plugin['plugin']
-		
-		try:
-			imported_plugin = __import__("plugins.%s" % pluginname, fromlist=["plugins"])
-		except ImportError:
-			logger.error("error importing " + pluginname + ".py!")
+        # remove the plugin name from the dict
+        del plugin['plugin']
 
-		# pass the remaining dict items as method parameters
-		try:
-			# TEST:
-			# does yaml ordering work with multile function parameters?
-			results = imported_plugin.collect(**plugin)
+        try:
+            imported_plugin = __import__("plugins.%s" % pluginname, fromlist=["plugins"])
+        except ImportError:
+            logger.error("error importing " + pluginname + ".py!")
 
-			for name, value in results.items():
-				full_namespace = namespace + "." + str(name)
+        # pass the remaining dict items as method parameters
+        try:
+            # TEST:
+            # does yaml ordering work with multile function parameters?
+            results = imported_plugin.collect(**plugin)
 
-				if config['stdout'] is True:
-					print full_namespace, value 
+            for name, value in results.items():
+                full_namespace = namespace + "." + str(name)
 
-				#FIXME: add different metric types to plugins, not only gauges
-				statsd_client.gauge(full_namespace, value)
-		except:
-			#FIXME: handle Exceptions properly
-			logger.error('command: "plugins/' + pluginname + '.py '+ str(plugin)+ '"failed! run the plugin directly to debug.')
-	
-	time.sleep(update_interval)
-	
+                if config['stdout'] is True:
+                    print full_namespace, value
+
+                #FIXME: add different metric types to plugins, not only gauges
+                statsd_client.gauge(full_namespace, value)
+        except:
+            #FIXME: handle Exceptions properly
+            logger.error('command: "plugins/' + pluginname + '.py '+ str(plugin)+ '"failed! run the plugin directly to debug.')
+
+    time.sleep(update_interval)

@@ -15,8 +15,6 @@ prefix = config['namespace_prefix']
 server = config['statsd_host']
 port   = config['statsd_port']
 
-print(config) 
-
 last_net  = psutil.net_io_counters()
 net_speed = {}
 
@@ -30,7 +28,7 @@ while True:
     net_speed['recv'] = (net.bytes_recv - last_net.bytes_recv) / 10
     net_speed['sent'] = (net.bytes_sent - last_net.bytes_sent) / 10
     last_net = net
-            
+
     gauges = {
         "memory.used":        memory.used,
         "memory.free":        memory.free,
@@ -46,7 +44,7 @@ while True:
         "net.out.errors":     net.errout,
         "net.out.dropped":    net.dropout,
     }
-    
+
     for name, value in gauges.items():
         print name, value
         statsd_client.gauge(name, value)

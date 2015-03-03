@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 def collect():
-	import psutil
-	memory = psutil.phymem_usage()
-            
-	gauges = {
-	    "used":        memory.used,
-	    "free":        memory.free,
-	    "total":       memory.total,
-	}
-	return gauges
-	
+    import psutil
+    memory = psutil.phymem_usage()
+
+    gauges = {
+        "used":        memory.used,
+        "free":        memory.free,
+        "total":       memory.total,
+    }
+    return gauges
+
 
 if __name__ == "__main__":
     import sys
@@ -19,4 +19,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     output = collect()
     for name, value in output.items():
-	    print name, value
+        print name, value
