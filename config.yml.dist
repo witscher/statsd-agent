@@ -1,41 +1,40 @@
 # your statsd server to deliver
-statsd_host: 127.0.0.1 
+statsd_host: localhost 
 statsd_port: 8125
 
-#send metrics also to stdout (for debugging/testing)
-stdout: False
-
+app_name: statsd-agent
+# 
 namespace_prefix: localhost
 
 logfile: statsd-agent.log
 
+pidfile: /tmp/statsd-agent.pid
+
 #write results also to stdout (for testing/debugging)
-stdout: False
+stdout: True
 
 # Update interval in seconds, default is 10s
 update_interval: 10
 
-
 plugins:
   # all plugins are located in the plugins folder
   # to develop your own plugin, use the skeleton plugin
-  # execute a plugin directly from the plugin directory to see possible configuration parameters and some output,
+  # execute a plugin directly from the plugin directory to see possible configuration parameters,
   # i.E.
   # ./plugins/disk.py -h
   # 
-  # misconfigured plugins or plugins with missing parameters will not run, but write a message to the log file
+  # misconfigured plugins or plugins with missing parameters will not run, but write a message to stdout and to the log file
 
-  - namespace: system.memory
-    plugin: memory
+  - plugin: memory
+    namespace: system.memory
 
-  - namespace: system.disk.root 
-    plugin: disk
-    mountpoint: /
+  - plugin:  disk
+    namespace: system.disk.root
 
   # example for a second disk
-  - namespace: system.disk.home 
-    plugin: disk
+  - plugin:  disk
+    namespace: system.disk.home
     mountpoint: /home
 
-  - namespace: system.processes
-    plugin: procs
+  - plugin: processes
+    namespace: system.processes

@@ -10,9 +10,9 @@ import copy
 
 
 config_file = "config.yml"
-
-
-config = yaml.load(file(sys.path[0] + "/" + config_file))
+config_path_full=sys.path[0] + "/" + config_file
+stream = open(config_path_full, 'r')
+config = yaml.load(stream)
 
 prefix = config['namespace_prefix']
 server = config['statsd_host']
