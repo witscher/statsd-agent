@@ -43,6 +43,7 @@ VALUES = [
     'keyspace_read_misses',
     'keyspace_write_hits',
     'keyspace_write_misses',
+    'repl_backlog_size',
 ]
 
 
